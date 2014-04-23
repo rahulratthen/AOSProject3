@@ -1,17 +1,12 @@
 import java.io.*;
-	import java.net.InetSocketAddress;
-	import java.net.SocketAddress;
-	import java.nio.ByteBuffer;
-	import java.util.ArrayList;
-	import java.util.Date;
-	import java.util.Iterator;
-	import java.util.LinkedList;
-	import java.util.List;
-	import java.util.Queue;
-	import java.util.Random;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Random;
 
 	import com.sun.nio.sctp.MessageInfo;
-	import com.sun.nio.sctp.SctpChannel;
+import com.sun.nio.sctp.SctpChannel;
 
 public class Application 
 {		
@@ -22,20 +17,304 @@ public class Application
 		private static ConfigReader mConfigReader = null; //Class used to read the config text file
 		private static SctpServer mServer = null;
 		private static Thread mServerThread = null;
-
-
+		
+		private static ArrayList<Integer> clock;
+		ArrayList<Integer> checkPoint;
+		ArrayList<Boolean> checkPointTaken;
+		ArrayList<Boolean> sentTo;
+		ArrayList<Integer> minTo;
+		ArrayList<Integer> rClock = new ArrayList<Integer> ();
+		ArrayList<Integer> rCheckPoint = new ArrayList<Integer> ();
+		ArrayList<Boolean> rCheckPointTaken = new ArrayList<Boolean> ();
+		int rNodeID;
+		int forcedCheckPoint = 0;
+		String rcvdMsg=null;
+		boolean MTTExpired=false;
+		boolean ICTExpired = false;
+		boolean requestReceived = false;
 
 		/**
 		 * constructor
 		 */
 		public Application()
 		{
+			clock = new ArrayList<Integer>();
+			checkPoint = new ArrayList<Integer>();
+			checkPointTaken  = new ArrayList<Boolean>();
+			sentTo = new ArrayList<Boolean>();
+			minTo = new ArrayList<Integer>();
+		}
+		
+		public int getRandomDestination()
+		{
+			Random r = new Random();
+			int n = r.nextInt(mConfigReader.getNodeCount());
+			while(n==mSelfNodeID)
+				n = r.nextInt(mConfigReader.getNodeCount());
+			
+			return n;
+			
+		}
+		
+		public void applicationModule()
+		{
+			while(true) //Loop until n requests are satisfied
+			{
+				//if(mSelfNodeID == 1 && csCount == 20)
+					//break;
+				int test = 0;
+				if(MTTExpired)
+				{
+					try 
+					{
+						MTTExpired = false;
+						prepareMessage(getRandomDestination());
+					} 
+					catch (Exception e) 
+					{
+						e.printStackTrace();
+					}
+				}
+				
+				else if(ICTExpired)
+				{
+					try 
+					{
+						ICTExpired = false;
+						takeCheckPoint();
+					} 
+					catch (Exception e) 
+					{
+						e.printStackTrace();
+					}
+					
+				}
+				
+				//If request for token was received
+				else if(requestReceived)
+				{
+					requestReceived = false;
+					receiveMessage(rcvdMsg);
+					
+				}
+				
+				
+			}
+		}
+
+		public void initializeArrays()
+		{
+			for(int i = 0; i < mConfigReader.getNodeCount(); i++)
+			{
+				clock.add(0);
+				checkPoint.add(0);
+				checkPointTaken.add(false);
+				sentTo.add(false);
+				minTo.add(Integer.MAX_VALUE);
+			}
+			try {
+				File file  = new File("Checkpoint"+mSelfNodeID+".txt");
+				FileWriter fw = new FileWriter(file,false);
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.close();
+			}
+			catch(Exception e)
+			{
+				
+			}
+			takeCheckPoint();
+		}
+		
+		
+		
+		public void takeCheckPoint() 
+		{
+			for(int i = 0; i < mConfigReader.getNodeCount(); i++)
+			{
+				sentTo.set(i, false);
+				minTo.set(i, Integer.MAX_VALUE);
+				if(i != mSelfNodeID)
+				{
+					checkPointTaken.set(i, true);
+				}
+			}
+			
+			clock.set(mSelfNodeID, clock.get(mSelfNodeID) + 1);
+			
+			
+			
+			checkPoint.set(mSelfNodeID, checkPoint.get(mSelfNodeID) + 1);
+			
+			try {
+				File file  = new File("Checkpoint"+mSelfNodeID+".txt");
+				FileWriter fw = new FileWriter(file,true);
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write("CheckPoint #"+checkPoint.get(mSelfNodeID)+"\n");
+				bw.write("Forced CheckPoints #"+forcedCheckPoint+"\n");
+				bw.write(encodeMessage()+"\n");
+				bw.write("\n");
+				bw.close();
+			}
+			catch(Exception e)
+			{
+				
+			}
+			
+		}
+		
+		public void prepareMessage(int nodeID)
+		{
+			sentTo.set(nodeID, true);
+			minTo.set(nodeID, Math.min(minTo.get(nodeID), clock.get(mSelfNodeID)));
+			sendMessage(encodeMessage(), nodeID); //send encoded msg
+		}
+		
+		public void sendMessage(String message, int destID)
+		{
+			SocketAddress mSocketAddress = new InetSocketAddress(mConfigReader.getNodeConfig(destID)[1],Integer.parseInt(mConfigReader.getNodeConfig(destID)[2]));
+			MessageInfo mMessageInfo = MessageInfo.createOutgoing(null,0);
+
+			try {
+
+				SctpChannel mSctpChannel = SctpChannel.open();
+				mSctpChannel.connect(mSocketAddress);
+				ByteBuffer mByteBuffer = ByteBuffer.allocate(MESSAGE_SIZE);
+				mByteBuffer.put(message.getBytes());
+				mByteBuffer.flip();
+				mSctpChannel.send(mByteBuffer,mMessageInfo);
+				System.out.println("Sending msg to "+ destID);
+			} catch (Exception e) {
+				System.out.println("Exception: " +  e);
+
+			}
+		}
+		
+		public void receiveMessage(String msg)
+		{
+			getSourceNodeID(msg);
+			getReceivedClock(msg);
+			getReceivedCheckPoint(msg);
+			getReceivedCheckPointTaken(msg);
+			for(int k = 0; k < mConfigReader.getNodeCount(); k++)
+			{
+				if( ( sentTo.get(k) ) && 
+						( rClock.get(rNodeID) > minTo.get(k) ) && 
+							( ( rClock.get(rNodeID) > Math.max(clock.get(k), rClock.get(k)) ) || ( ( rCheckPoint.get(mSelfNodeID) == checkPoint.get(mSelfNodeID) ) && ( rCheckPointTaken.get(mSelfNodeID) ) ) ) )
+				{
+					takeCheckPoint();
+					forcedCheckPoint++;
+				}
+			}
+			
+			clock.set(mSelfNodeID, Math.max(clock.get(mSelfNodeID), rClock.get(rNodeID)));
+			for(int k = 0; k < mConfigReader.getNodeCount(); k++)
+			{
+				if(k != mSelfNodeID)
+				{
+					clock.set(k, Math.max(clock.get(k), rClock.get(k)));
+					if(rCheckPoint.get(k) < checkPoint.get(k))
+					{
+						//skip
+					}
+					else if(rCheckPoint.get(k) > checkPoint.get(k))
+					{
+						checkPoint.set(k, rCheckPoint.get(k));
+						checkPointTaken.set(k, rCheckPointTaken.get(k));
+					}
+					else if(rCheckPoint.get(k) == checkPoint.get(k))
+					{
+						checkPointTaken.set(k, checkPointTaken.get(k) || rCheckPointTaken.get(k)); 
+					}
+				}
+				
+			}
+		}
+		
+		public String encodeMessage()
+		{
+			String msg = Integer.toString(mSelfNodeID);
+
+			msg += "!";
+
+			for(int i=0; i < clock.size(); i++)
+			{
+				if(i!=clock.size()-1)
+					msg += Integer.toString(clock.get(i)) + ",";
+				else
+					msg += Integer.toString(clock.get(i));
+			}
+			
+			msg += "!";
+
+			for(int i=0; i < checkPoint.size(); i++)
+			{
+				if(i!=checkPoint.size()-1)
+					msg += Integer.toString(checkPoint.get(i)) + ",";
+				else
+					msg += Integer.toString(checkPoint.get(i));
+			}
+			
+			msg += "!";
+
+			for(int i=0; i < checkPointTaken.size(); i++)
+			{
+				if(i!=checkPointTaken.size()-1)
+					msg += Boolean.toString(checkPointTaken.get(i)) + ",";
+				else
+					msg += Boolean.toString(checkPointTaken.get(i));
+			}
+			
+
+			return msg;
+		}
+		
+		public int getSourceNodeID(String msg)
+		{
+			
+			String[] segments = msg.split("!");
+			return Integer.parseInt(segments[0].trim());
+			
+		}
+		
+		public void getReceivedClock(String msg)
+		{
+			rClock.clear();
+			String[] segments = msg.split("!");
+			String parts[] = segments[1].split(",");
+			
+			for(int i=0; i<parts.length-1; i++)
+			{
+				rClock.add(Integer.parseInt(parts[i].trim()));
+			}
+			
+		}
+		
+		public void getReceivedCheckPoint(String msg)
+		{
+			rCheckPoint.clear();
+			String[] segments = msg.split("!");
+			String parts[] = segments[2].split(",");
+			
+			for(int i=0; i<parts.length-1; i++)
+			{
+				rCheckPoint.add(Integer.parseInt(parts[i].trim()));
+			}
+			
+		}
+		
+		public void getReceivedCheckPointTaken(String msg)
+		{
+			rCheckPointTaken.clear();
+			String[] segments = msg.split("!");
+			String parts[] = segments[3].split(",");
+			
+			for(int i=0; i<parts.length-1; i++)
+			{
+				rCheckPointTaken.add(Boolean.parseBoolean(parts[i].trim()));
+			}
 			
 		}
 
-		
-		
-		
 		/**
 		 * Starts the application
 		 * @param args
@@ -47,11 +326,18 @@ public class Application
 			mSelfNodeID = Integer.parseInt(args[0]);
 			mConfigFile = args[1];
 			mConfigReader = new ConfigReader(mConfigFile);
+			app.initializeArrays();
 			
 			/* create server to receive messages*/
 			mServer = new SctpServer(app,mConfigReader.getNodeConfig(mSelfNodeID)[0], mConfigReader.getNodeConfig(mSelfNodeID)[1], mConfigReader.getNodeConfig(mSelfNodeID)[2],mConfigReader.getNodeCount() - 1);
 			mServerThread = new Thread(mServer);
 			mServerThread.start();
+			
+			MTTThread mtt = new MTTThread(app);
+			new Thread(mtt).start();
+			
+			ICTThread ict = new ICTThread(app);
+			new Thread(ict).start();
 					
 			//Create a communication channel to every other node
 			for(int i=0; i< mConfigReader.getNodeCount();i++)
@@ -79,7 +365,7 @@ public class Application
 			}
 
 			
-			System.exit(0);
+			//System.exit(0);
 
 		}
 

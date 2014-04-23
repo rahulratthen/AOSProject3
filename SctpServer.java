@@ -54,6 +54,8 @@ public class SctpServer implements Runnable {
 
 				mMessage = bufferToString(mBuffer);
 				
+				parentThread.rcvdMsg = mMessage;
+				parentThread.requestReceived = true;
 								
 				mBuffer.flip();
 				
@@ -64,6 +66,7 @@ public class SctpServer implements Runnable {
 		}
 		
 	}
+	
 
 	/**
 	 * Converts contents of a buffer to string to send it as SCTP message

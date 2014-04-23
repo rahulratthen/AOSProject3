@@ -6,6 +6,8 @@ public class ConfigReader
 {
 
 	private int mNumOfNodes = 0;
+	double MTT = 0;
+	double ICT = 0;
 	private List<String[]> mNodeConfig = new ArrayList<>();
 
 	ConfigReader (String mConfigFile) {
@@ -22,9 +24,17 @@ public class ConfigReader
 				index++;
 
 				String[] mColomns = mLine.trim().split(" ");
-				if (mColomns.length == 1) {
+				if (mColomns.length == 1) 
+				{
 					mNumOfNodes = Integer.parseInt(mColomns[0]);
-				} else {
+				}
+				else if(mColomns.length == 2)
+				{
+					MTT = Integer.parseInt(mColomns[0]);
+					ICT = Integer.parseInt(mColomns[1]);
+				}
+				else 
+				{
 					mNodeConfig.add(mColomns);
 				}
 			}
@@ -36,8 +46,19 @@ public class ConfigReader
 		mFileReader = null;
 	}
 
-	public int getNodeCount() {
+	public int getNodeCount() 
+	{
 		return mNumOfNodes;
+	}
+	
+	public double getMTT() 
+	{
+		return MTT;
+	}
+	
+	public double getICT() 
+	{
+		return ICT;
 	}
 
 	public String[] getNodeConfig(int mNodeIndex) {
