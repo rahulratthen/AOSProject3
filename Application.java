@@ -32,6 +32,9 @@ public class Application
 		boolean MTTExpired=false;
 		boolean ICTExpired = false;
 		boolean requestReceived = false;
+		double mtt, ict;
+		
+		
 
 		/**
 		 * constructor
@@ -62,9 +65,13 @@ public class Application
 			{
 				//if(mSelfNodeID == 1 && csCount == 20)
 					//break;
+				System.out.print("");
+				
 				int test = 0;
 				if(MTTExpired)
 				{
+					System.out.println("MTT TImer expired");
+					int test2 = 0;
 					try 
 					{
 						MTTExpired = false;
@@ -78,6 +85,9 @@ public class Application
 				
 				else if(ICTExpired)
 				{
+					int test3 = 0;
+					System.out.println("ICT TImer expired");
+					
 					try 
 					{
 						ICTExpired = false;
@@ -93,6 +103,8 @@ public class Application
 				//If request for token was received
 				else if(requestReceived)
 				{
+					//System.out.println("Request Received");
+					
 					requestReceived = false;
 					receiveMessage(rcvdMsg);
 					
@@ -104,6 +116,8 @@ public class Application
 
 		public void initializeArrays()
 		{
+			mtt = mConfigReader.getMTT();
+			ict = mConfigReader.getICT();
 			for(int i = 0; i < mConfigReader.getNodeCount(); i++)
 			{
 				clock.add(0);
@@ -117,6 +131,7 @@ public class Application
 				FileWriter fw = new FileWriter(file,false);
 				BufferedWriter bw = new BufferedWriter(fw);
 				bw.close();
+				fw.close();
 			}
 			catch(Exception e)
 			{
@@ -129,6 +144,9 @@ public class Application
 		
 		public void takeCheckPoint() 
 		{
+			
+			System.out.println("CheckPoint taken");
+			
 			for(int i = 0; i < mConfigReader.getNodeCount(); i++)
 			{
 				sentTo.set(i, false);
@@ -154,6 +172,7 @@ public class Application
 				bw.write(encodeMessage()+"\n");
 				bw.write("\n");
 				bw.close();
+				fw.close();
 			}
 			catch(Exception e)
 			{
@@ -164,6 +183,10 @@ public class Application
 		
 		public void prepareMessage(int nodeID)
 		{
+			//System.out.println("printMessage called");
+			//if(mSelfNodeID == 0) System.out.println("Dest : "+nodeID);
+			
+			
 			sentTo.set(nodeID, true);
 			minTo.set(nodeID, Math.min(minTo.get(nodeID), clock.get(mSelfNodeID)));
 			sendMessage(encodeMessage(), nodeID); //send encoded msg
@@ -171,6 +194,8 @@ public class Application
 		
 		public void sendMessage(String message, int destID)
 		{
+			//System.out.println("Sending msg to "+destID);
+			
 			SocketAddress mSocketAddress = new InetSocketAddress(mConfigReader.getNodeConfig(destID)[1],Integer.parseInt(mConfigReader.getNodeConfig(destID)[2]));
 			MessageInfo mMessageInfo = MessageInfo.createOutgoing(null,0);
 
@@ -182,7 +207,8 @@ public class Application
 				mByteBuffer.put(message.getBytes());
 				mByteBuffer.flip();
 				mSctpChannel.send(mByteBuffer,mMessageInfo);
-				System.out.println("Sending msg to "+ destID);
+				//mSctpChannel.close();
+				//System.out.println("Sending msg to "+ destID);
 			} catch (Exception e) {
 				System.out.println("Exception: " +  e);
 
@@ -191,18 +217,50 @@ public class Application
 		
 		public void receiveMessage(String msg)
 		{
+			
 			getSourceNodeID(msg);
 			getReceivedClock(msg);
 			getReceivedCheckPoint(msg);
 			getReceivedCheckPointTaken(msg);
+			
+			
+			
 			for(int k = 0; k < mConfigReader.getNodeCount(); k++)
 			{
+				
+				/*
+				 boolean A = sentTo.get(k);
+				System.out.println(minTo.get(k) + " , "+ rClock.get(rNodeID));
+				boolean B =  minTo.get(k) < rClock.get(rNodeID) ;
+				
+				boolean D = rClock.get(rNodeID) > Math.max(clock.get(k), rClock.get(k));
+				
+				
+				boolean F = (rCheckPoint.get(mSelfNodeID) == checkPoint.get(mSelfNodeID));
+				boolean G =  rCheckPointTaken.get(mSelfNodeID);
+				boolean E = F && G;
+				boolean C = D||E;
+				
+			System.out.println(A+"  "+B+"  "+C);
+				
+				if( A && B && C )
+				{
+					takeCheckPoint();
+					forcedCheckPoint++;
+					System.out.println("Forced Checkpoint taken #"+forcedCheckPoint);
+					
+				}
+				 */
+				
+				
 				if( ( sentTo.get(k) ) && 
 						( rClock.get(rNodeID) > minTo.get(k) ) && 
 							( ( rClock.get(rNodeID) > Math.max(clock.get(k), rClock.get(k)) ) || ( ( rCheckPoint.get(mSelfNodeID) == checkPoint.get(mSelfNodeID) ) && ( rCheckPointTaken.get(mSelfNodeID) ) ) ) )
 				{
 					takeCheckPoint();
 					forcedCheckPoint++;
+					System.out.println("Forced Checkpoint taken #"+forcedCheckPoint);
+					
 				}
 			}
 			
@@ -282,7 +340,7 @@ public class Application
 			String[] segments = msg.split("!");
 			String parts[] = segments[1].split(",");
 			
-			for(int i=0; i<parts.length-1; i++)
+			for(int i=0; i<parts.length; i++)
 			{
 				rClock.add(Integer.parseInt(parts[i].trim()));
 			}
@@ -295,7 +353,7 @@ public class Application
 			String[] segments = msg.split("!");
 			String parts[] = segments[2].split(",");
 			
-			for(int i=0; i<parts.length-1; i++)
+			for(int i=0; i<parts.length; i++)
 			{
 				rCheckPoint.add(Integer.parseInt(parts[i].trim()));
 			}
@@ -308,7 +366,7 @@ public class Application
 			String[] segments = msg.split("!");
 			String parts[] = segments[3].split(",");
 			
-			for(int i=0; i<parts.length-1; i++)
+			for(int i=0; i<parts.length; i++)
 			{
 				rCheckPointTaken.add(Boolean.parseBoolean(parts[i].trim()));
 			}
@@ -338,7 +396,9 @@ public class Application
 			
 			ICTThread ict = new ICTThread(app);
 			new Thread(ict).start();
-					
+				
+			app.applicationModule();
+			
 			//Create a communication channel to every other node
 			for(int i=0; i< mConfigReader.getNodeCount();i++)
 			{

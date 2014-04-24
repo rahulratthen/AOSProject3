@@ -4,7 +4,8 @@ import java.util.Random;
 public class ICTThread implements Runnable {
 	
 	Application parentThread;
-	
+	RvGenerator rv;
+	double rangeMin, rangeMax, sleepTime;
 	/**
 	 * 
 	 * @param p
@@ -12,6 +13,9 @@ public class ICTThread implements Runnable {
 	public ICTThread(Application p)
 	{
 		parentThread = p;
+		rangeMin = (double)0.5*parentThread.ict;
+		rangeMax = (double)1.5*parentThread.ict;
+		rv = new RvGenerator();
 	}
 	@Override
 	public void run() {
@@ -19,8 +23,12 @@ public class ICTThread implements Runnable {
 		{
 			try {
 				//replace it with the exponential distribution RV
-				Thread.sleep(3000);
+				sleepTime = rangeMin + (rangeMax - rangeMin)*rv.uniRv();
+				//System.out.println("Uniform Rv: "+sleepTime*300);
+				Thread.sleep((int)sleepTime*300);
+				//Thread.sleep(1500);
 				parentThread.ICTExpired = true;
+				//System.out.println("ICT expired");
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
