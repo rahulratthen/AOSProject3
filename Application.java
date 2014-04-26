@@ -70,7 +70,7 @@ public class Application
 				int test = 0;
 				if(MTTExpired)
 				{
-					System.out.println("MTT TImer expired");
+					//System.out.println("MTT TImer expired");
 					int test2 = 0;
 					try 
 					{
@@ -218,12 +218,12 @@ public class Application
 		public void receiveMessage(String msg)
 		{
 			
-			getSourceNodeID(msg);
+			rNodeID = getSourceNodeID(msg);
 			getReceivedClock(msg);
 			getReceivedCheckPoint(msg);
 			getReceivedCheckPointTaken(msg);
 			
-			
+			//System.out.println("Message received " + msg);
 			
 			for(int k = 0; k < mConfigReader.getNodeCount(); k++)
 			{
@@ -252,10 +252,10 @@ public class Application
 				}
 				 */
 				
-				
-				if( ( sentTo.get(k) ) && 
-						( rClock.get(rNodeID) > minTo.get(k) ) && 
-							( ( rClock.get(rNodeID) > Math.max(clock.get(k), rClock.get(k)) ) || ( ( rCheckPoint.get(mSelfNodeID) == checkPoint.get(mSelfNodeID) ) && ( rCheckPointTaken.get(mSelfNodeID) ) ) ) )
+				//System.out.println("Rclock of node "+rNodeID + " is " + rClock.get(rNodeID) + " Min to of " + k + " is " + minTo.get(k));
+				if(  sentTo.get(k) && 
+						(rClock.get(rNodeID) > minTo.get(k)) && 
+							( ( rClock.get(rNodeID) > Math.max(clock.get(k), rClock.get(k)) ) || ( rCheckPoint.get(mSelfNodeID) == checkPoint.get(mSelfNodeID) ) && ( rCheckPointTaken.get(mSelfNodeID) ) )  )
 				{
 					takeCheckPoint();
 					forcedCheckPoint++;
