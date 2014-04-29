@@ -2,12 +2,13 @@ import java.util.Random;
 
 public class RvGenerator 
 {
-	double Seed;
+	Random rand;
 
 	public RvGenerator()
 	{	//constructor
 		super();
-		this.Seed = 1111.0;
+		
+		rand = new Random();
 	}
 	
 	/*
@@ -26,7 +27,7 @@ public class RvGenerator
 */	
 	public double uniRv()
 	{	
-		Random rand = new Random();
+		
 		return(rand.nextDouble());
 	}
 	
@@ -34,7 +35,7 @@ public class RvGenerator
 	{		//function to generate exponential random variables 
 		
 		double exp;
-	    exp = ((-1.0) / lambda) * Math.log(uniRv());
+	    exp = (double)((-1.0) / lambda) * Math.log(1-uniRv());
 	    return(exp);
 		
 	}

@@ -24,8 +24,8 @@ public class ICTThread implements Runnable {
 			try {
 				//replace it with the exponential distribution RV
 				sleepTime = rangeMin + (rangeMax - rangeMin)*rv.uniRv();
-				//System.out.println("Uniform Rv: "+sleepTime*300);
-				Thread.sleep((int)sleepTime*300);
+				//System.out.println("ICT: "+(int)(sleepTime*1000));
+				Thread.sleep((int)(sleepTime*1000));
 				//Thread.sleep(1500);
 				parentThread.ICTExpired = true;
 				//System.out.println("ICT expired");

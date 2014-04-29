@@ -61,7 +61,7 @@ public class Application
 		
 		public void applicationModule()
 		{
-			while(true) //Loop until n requests are satisfied
+			while(checkPoint.get(mSelfNodeID)<50) //Loop until n requests are satisfied
 			{
 				//if(mSelfNodeID == 1 && csCount == 20)
 					//break;
@@ -207,10 +207,10 @@ public class Application
 				mByteBuffer.put(message.getBytes());
 				mByteBuffer.flip();
 				mSctpChannel.send(mByteBuffer,mMessageInfo);
-				//mSctpChannel.close();
+				mSctpChannel.close();
 				//System.out.println("Sending msg to "+ destID);
 			} catch (Exception e) {
-				System.out.println("Exception: " +  e);
+				//System.out.println("Exception: " +  e);
 
 			}
 		}
@@ -398,7 +398,7 @@ public class Application
 			new Thread(ict).start();
 				
 			app.applicationModule();
-			
+			/*
 			//Create a communication channel to every other node
 			for(int i=0; i< mConfigReader.getNodeCount();i++)
 			{
@@ -423,9 +423,9 @@ public class Application
 
 
 			}
-
-			
-			//System.exit(0);
+*/
+			System.out.println("System has taken enough checkpoints. Terminating...");
+			System.exit(0);
 
 		}
 

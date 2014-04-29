@@ -25,8 +25,8 @@ public class MTTThread implements Runnable {
 			try {
 				//replace it with the exponential distribution RV
 				
-				
-				Thread.sleep((int)rv.expRv(parentThread.mtt)*100);
+				//System.out.println("MTT :"+(int)(rv.expRv(parentThread.mtt)*1000));
+				Thread.sleep((int)(rv.expRv(parentThread.mtt)*1000));
 				//Thread.sleep(20);
 				parentThread.MTTExpired = true;
 				//System.out.println("MTT expired");
