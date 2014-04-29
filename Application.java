@@ -33,6 +33,7 @@ public class Application
 		boolean ICTExpired = false;
 		boolean requestReceived = false;
 		double mtt, ict;
+		int independentChkpoints;
 		
 		
 
@@ -61,7 +62,8 @@ public class Application
 		
 		public void applicationModule()
 		{
-			while(checkPoint.get(mSelfNodeID)<50) //Loop until n requests are satisfied
+			independentChkpoints = 0;
+			while(independentChkpoints<50) //Loop until n requests are satisfied
 			{
 				//if(mSelfNodeID == 1 && csCount == 20)
 					//break;
@@ -86,7 +88,8 @@ public class Application
 				else if(ICTExpired)
 				{
 					int test3 = 0;
-					System.out.println("ICT TImer expired");
+					independentChkpoints++;
+					//System.out.println("ICT TImer expired");
 					
 					try 
 					{
@@ -167,7 +170,8 @@ public class Application
 				File file  = new File("Checkpoint"+mSelfNodeID+".txt");
 				FileWriter fw = new FileWriter(file,true);
 				BufferedWriter bw = new BufferedWriter(fw);
-				bw.write("CheckPoint #"+checkPoint.get(mSelfNodeID)+"\n");
+				//bw.write("Independent CheckPoint #"+checkPoint.get(mSelfNodeID)+"\n");
+				bw.write("Independent CheckPoint #"+independentChkpoints+"\n");
 				bw.write("Forced CheckPoints #"+forcedCheckPoint+"\n");
 				bw.write(encodeMessage()+"\n");
 				bw.write("\n");
