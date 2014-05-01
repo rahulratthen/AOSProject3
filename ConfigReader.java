@@ -30,8 +30,8 @@ public class ConfigReader
 				}
 				else if(mColomns.length == 2)
 				{
-					MTT = Integer.parseInt(mColomns[0]);
-					ICT = Integer.parseInt(mColomns[1]);
+					MTT = Double.parseDouble(mColomns[0]);
+					ICT = Double.parseDouble(mColomns[1]);
 				}
 				else 
 				{

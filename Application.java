@@ -245,7 +245,7 @@ public class Application
 				FileWriter fw = new FileWriter(file,true);
 				BufferedWriter bw = new BufferedWriter(fw);
 				//bw.write("Independent CheckPoint #"+checkPoint.get(mSelfNodeID)+"\n");
-				bw.write("Node : "+mSelfNodeID+"    "+Integer.toString(forcedCheckPoint));
+				bw.write(Integer.toString(forcedCheckPoint));
 				bw.write("\n");
 				bw.close();
 				fw.close();
