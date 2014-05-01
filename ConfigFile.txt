@@ -1,12 +1,12 @@
 10
 50 1
-0 net15.utdallas.edu 54433
-1 net01.utdallas.edu 54490
-2 net02.utdallas.edu 54434
-3 net03.utdallas.edu 54435
-4 net04.utdallas.edu 54436
-5 net05.utdallas.edu 54437
-6 net06.utdallas.edu 54438
-7 net07.utdallas.edu 54439
-8 net08.utdallas.edu 54440
-9 net09.utdallas.edu 54441
+0 net15.utdallas.edu 50823
+1 net01.utdallas.edu 50820
+2 net02.utdallas.edu 50824
+3 net03.utdallas.edu 50825
+4 net04.utdallas.edu 50826
+5 net05.utdallas.edu 50827
+6 net06.utdallas.edu 50828
+7 net07.utdallas.edu 50829
+8 net08.utdallas.edu 50890
+9 net09.utdallas.edu 50844

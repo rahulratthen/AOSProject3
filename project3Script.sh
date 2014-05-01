@@ -10,6 +10,19 @@ remotecomputer7=net07.utdallas.edu
 remotecomputer8=net08.utdallas.edu
 remotecomputer9=net09.utdallas.edu
 
+rm ErrorLog.txt
+
+rm FinalStats0.txt
+rm FinalStats1.txt
+rm FinalStats2.txt
+rm FinalStats3.txt
+rm FinalStats4.txt
+rm FinalStats5.txt
+rm FinalStats6.txt
+rm FinalStats7.txt
+rm FinalStats8.txt
+rm FinalStats9.txt
+
 javac *.java
 
 ssh -l "$remoteuser" "$remotecomputer0" "cd $HOME/AOSProject3;java Application 0 ConfigFile.txt"
@@ -22,4 +35,3 @@ ssh -l "$remoteuser" "$remotecomputer6" "cd $HOME/AOSProject3;java Application 6
 ssh -l "$remoteuser" "$remotecomputer7" "cd $HOME/AOSProject3;java Application 7 ConfigFile.txt"
 ssh -l "$remoteuser" "$remotecomputer8" "cd $HOME/AOSProject3;java Application 8 ConfigFile.txt"
 ssh -l "$remoteuser" "$remotecomputer9" "cd $HOME/AOSProject3;java Application 9 ConfigFile.txt"
-

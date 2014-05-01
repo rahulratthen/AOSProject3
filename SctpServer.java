@@ -54,8 +54,16 @@ public class SctpServer implements Runnable {
 
 				mMessage = bufferToString(mBuffer);
 				
-				parentThread.rcvdMsg = mMessage;
-				parentThread.requestReceived = true;
+				if(mMessage != null)
+				{
+					if(mMessage.length() > 5 && !mMessage.equals(""))
+					{
+						parentThread.rcvdMsg = mMessage;
+						parentThread.requestReceived = true;
+						
+					}
+				}
+				
 								
 				mBuffer.flip();
 				

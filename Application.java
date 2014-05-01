@@ -62,6 +62,7 @@ public class Application
 		
 		public void applicationModule()
 		{
+			try{
 			independentChkpoints = 0;
 			while(independentChkpoints<50) //Loop until n requests are satisfied
 			{
@@ -114,6 +115,24 @@ public class Application
 				}
 				
 				
+
+			}
+			}
+			catch(Exception e)
+			{
+				try {
+					File file  = new File("ErrorLog.txt");
+					FileWriter fw = new FileWriter(file,true);
+					BufferedWriter bw = new BufferedWriter(fw);
+					bw.write(mSelfNodeID+"Error: "+e);
+					bw.write("\n");
+					bw.close();
+					fw.close();
+				}
+				catch(Exception ex)
+				{
+					
+				}
 			}
 		}
 
@@ -219,9 +238,28 @@ public class Application
 			}
 		}
 		
+		public void printFinalStats(int fileNo)
+		{
+			try {
+				File file  = new File("FinalStats"+fileNo+".txt");
+				FileWriter fw = new FileWriter(file,true);
+				BufferedWriter bw = new BufferedWriter(fw);
+				//bw.write("Independent CheckPoint #"+checkPoint.get(mSelfNodeID)+"\n");
+				bw.write("Node : "+mSelfNodeID+"    "+Integer.toString(forcedCheckPoint));
+				bw.write("\n");
+				bw.close();
+				fw.close();
+			}
+			catch(Exception e)
+			{
+				
+			}
+		}
+		
 		public void receiveMessage(String msg)
 		{
 			
+			try{
 			rNodeID = getSourceNodeID(msg);
 			getReceivedClock(msg);
 			getReceivedCheckPoint(msg);
@@ -290,6 +328,23 @@ public class Application
 				}
 				
 			}
+			}
+			catch(Exception e)
+			{
+				try {
+					File file  = new File("ErrorLog.txt");
+					FileWriter fw = new FileWriter(file,true);
+					BufferedWriter bw = new BufferedWriter(fw);
+					bw.write(mSelfNodeID+"Rcvd msg: "+msg);
+					bw.write("\n");
+					bw.close();
+					fw.close();
+				}
+				catch(Exception ex)
+				{
+					
+				}
+			}
 		}
 		
 		public String encodeMessage()
@@ -340,6 +395,7 @@ public class Application
 		
 		public void getReceivedClock(String msg)
 		{
+			try{
 			rClock.clear();
 			String[] segments = msg.split("!");
 			String parts[] = segments[1].split(",");
@@ -348,11 +404,29 @@ public class Application
 			{
 				rClock.add(Integer.parseInt(parts[i].trim()));
 			}
+			}
+			catch(Exception e)
+			{
+				try {
+					File file  = new File("ErrorLog.txt");
+					FileWriter fw = new FileWriter(file,true);
+					BufferedWriter bw = new BufferedWriter(fw);
+					bw.write(mSelfNodeID+"Rcvd msg: "+msg);
+					bw.write("\n");
+					bw.close();
+					fw.close();
+				}
+				catch(Exception ex)
+				{
+					
+				}
+			}
 			
 		}
 		
 		public void getReceivedCheckPoint(String msg)
 		{
+			try{
 			rCheckPoint.clear();
 			String[] segments = msg.split("!");
 			String parts[] = segments[2].split(",");
@@ -361,11 +435,29 @@ public class Application
 			{
 				rCheckPoint.add(Integer.parseInt(parts[i].trim()));
 			}
+			}
+			catch(Exception e)
+			{
+				try {
+					File file  = new File("ErrorLog.txt");
+					FileWriter fw = new FileWriter(file,true);
+					BufferedWriter bw = new BufferedWriter(fw);
+					bw.write(mSelfNodeID+"Rcvd msg: "+msg);
+					bw.write("\n");
+					bw.close();
+					fw.close();
+				}
+				catch(Exception ex)
+				{
+					
+				}
+			}
 			
 		}
 		
 		public void getReceivedCheckPointTaken(String msg)
 		{
+			try{
 			rCheckPointTaken.clear();
 			String[] segments = msg.split("!");
 			String parts[] = segments[3].split(",");
@@ -373,6 +465,23 @@ public class Application
 			for(int i=0; i<parts.length; i++)
 			{
 				rCheckPointTaken.add(Boolean.parseBoolean(parts[i].trim()));
+			}
+			}
+			catch(Exception e)
+			{
+				try {
+					File file  = new File("ErrorLog.txt");
+					FileWriter fw = new FileWriter(file,true);
+					BufferedWriter bw = new BufferedWriter(fw);
+					bw.write(mSelfNodeID+"Rcvd msg: "+msg);
+					bw.write("\n");
+					bw.close();
+					fw.close();
+				}
+				catch(Exception ex)
+				{
+					
+				}
 			}
 			
 		}
@@ -402,6 +511,7 @@ public class Application
 			new Thread(ict).start();
 				
 			app.applicationModule();
+			app.printFinalStats(0);
 			/*
 			//Create a communication channel to every other node
 			for(int i=0; i< mConfigReader.getNodeCount();i++)
