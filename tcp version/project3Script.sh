@@ -13,15 +13,6 @@ remotecomputer9=net09.utdallas.edu
 rm ErrorLog.txt
 
 rm FinalStats0.txt
-rm FinalStats1.txt
-rm FinalStats2.txt
-rm FinalStats3.txt
-rm FinalStats4.txt
-rm FinalStats5.txt
-rm FinalStats6.txt
-rm FinalStats7.txt
-rm FinalStats8.txt
-rm FinalStats9.txt
 
 javac *.java
 

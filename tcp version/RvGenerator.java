@@ -35,8 +35,10 @@ public class RvGenerator
 	{		//function to generate exponential random variables 
 		
 		double exp;
-	    exp = (double)((-1.0) / lambda) * Math.log(1-uniRv());
-	    return(exp);
+		double u = Math.random();
+	    //exp = (double)((-1.0) / lambda) * Math.log(1-uniRv());
+	    exp = -Math.log(1-u)*lambda;
+		return(exp);
 		
 	}
 

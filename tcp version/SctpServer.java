@@ -83,13 +83,16 @@ public class SctpServer implements Runnable {
         while(true)
         {
         	String mMessage;
+        	//System.out.println("Started");
            Socket connectionSocket = welcomeSocket.accept();
            BufferedReader inFromClient =
               new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
            mMessage = inFromClient.readLine();
+           //System.out.println(mMessage);
            if(mMessage != null)
 			{
-				if(mMessage.length() > 5 && !mMessage.equals(""))
+        	   
+        	   if(mMessage.length() > 5 && !mMessage.equals(""))
 				{
 					parentThread.rcvdMsg = mMessage;
 					parentThread.requestReceived = true;

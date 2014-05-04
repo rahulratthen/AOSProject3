@@ -13,7 +13,7 @@ public class Application
 {		
 		public static int MESSAGE_SIZE = 128;
 
-		private static int mSelfNodeID = 0;
+		public static int mSelfNodeID = 0;
 		private static String mConfigFile = null;
 		private static ConfigReader mConfigReader = null; //Class used to read the config text file
 		private static SctpServer mServer = null;
@@ -257,7 +257,7 @@ public class Application
 			  outToServer.writeBytes(message);
 			  clientSocket.close();
 			} catch (Exception e) {
-				//System.out.println("Exception: " +  e);
+				System.out.println("Exception: " +  e);
 
 			}
 
@@ -322,11 +322,12 @@ public class Application
 				//System.out.println("Rclock of node "+rNodeID + " is " + rClock.get(rNodeID) + " Min to of " + k + " is " + minTo.get(k));
 				if(  sentTo.get(k) && 
 						(rClock.get(rNodeID) > minTo.get(k)) && 
-							( ( rClock.get(rNodeID) > Math.max(clock.get(k), rClock.get(k)) ) || ( rCheckPoint.get(mSelfNodeID) == checkPoint.get(mSelfNodeID) ) && ( rCheckPointTaken.get(mSelfNodeID) ) )  )
+							( ( rClock.get(rNodeID) > Math.max(clock.get(k), rClock.get(k)) ) || ( ( rCheckPoint.get(mSelfNodeID) == checkPoint.get(mSelfNodeID) ) && ( rCheckPointTaken.get(mSelfNodeID) ) ) )  )
 				{
 					takeCheckPoint();
 					forcedCheckPoint++;
 					System.out.println("Forced Checkpoint taken #"+forcedCheckPoint);
+					break;
 					
 				}
 			}
@@ -537,6 +538,8 @@ public class Application
 				
 			app.applicationModule();
 			app.printFinalStats(0);
+			
+			
 			/*
 			//Create a communication channel to every other node
 			for(int i=0; i< mConfigReader.getNodeCount();i++)
