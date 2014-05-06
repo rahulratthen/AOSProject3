@@ -11,6 +11,7 @@ Run the script with the following command:
 sh project3Script.sh
 
 In the script file modify the first line to the appropriate netID
+Modify the path in the subsequent lines to the path with all the java files
 The script will automatically compile all the java files in the current folder and run the program.
 By default, 10 nodes will be run in the background, printing messages on the screen and will eventually terminate with the following message:
 "System has taken enough checkpoints. Terminating..."
